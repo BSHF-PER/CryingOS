@@ -1,0 +1,15 @@
+{
+  "slug": "phone",
+  "name": "Phone",
+  "icon": "📞",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Phone.svg",
+  "color": "#34C759",
+  "version": "1.0.0",
+  "description": "Your phone number and profile",
+  "default": false,
+  "removable": false,
+  "entry": "apps/phone/app.js",
+  "styles": ["apps/phone/style.css"],
+  "sort": 50
+}
