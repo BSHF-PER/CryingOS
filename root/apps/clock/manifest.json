@@ -1,0 +1,15 @@
+{
+  "slug": "clock",
+  "name": "Clock",
+  "icon": "🕐",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Clock.svg",
+  "color": "#FF9500",
+  "version": "1.0.0",
+  "description": "World clock, alarms, timer and stopwatch",
+  "default": false,
+  "removable": true,
+  "entry": "apps/clock/app.js",
+  "styles": ["apps/clock/style.css"],
+  "sort": 45
+}
