@@ -1,0 +1,15 @@
+{
+  "slug": "gallery",
+  "name": "Photos",
+  "icon": "🖼️",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Photos.svg",
+  "color": "#FF3B30",
+  "version": "2.0.0",
+  "description": "Your memories, beautifully organized",
+  "default": true,
+  "removable": true,
+  "entry": "apps/gallery/app.js",
+  "styles": ["apps/gallery/style.css"],
+  "sort": 20
+}
