@@ -1,0 +1,15 @@
+{
+  "slug": "camera",
+  "name": "Camera",
+  "icon": "📷",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Camera.svg",
+  "color": "#3A3A3C",
+  "version": "2.0.0",
+  "description": "Capture moments with filters and controls",
+  "default": true,
+  "removable": true,
+  "entry": "apps/camera/app.js",
+  "styles": ["apps/camera/style.css"],
+  "sort": 30
+}
