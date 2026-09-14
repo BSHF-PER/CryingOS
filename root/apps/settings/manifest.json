@@ -1,0 +1,15 @@
+{
+  "slug": "settings",
+  "name": "Settings",
+  "icon": "⚙️",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Settings.svg",
+  "color": "#8E8E93",
+  "version": "2.0.0",
+  "description": "Configure your phone — security, appearance and more",
+  "default": true,
+  "removable": false,
+  "entry": "apps/settings/app.js",
+  "styles": ["apps/settings/style.css"],
+  "sort": 90
+}
