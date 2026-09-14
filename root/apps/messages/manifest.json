@@ -1,0 +1,15 @@
+{
+  "slug": "messages",
+  "name": "Messages",
+  "icon": "💬",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Messages.svg",
+  "color": "#34C759",
+  "version": "1.0.0",
+  "description": "Send and receive messages with other users",
+  "default": false,
+  "removable": true,
+  "entry": "apps/messages/app.js",
+  "styles": ["apps/messages/style.css"],
+  "sort": 60
+}
