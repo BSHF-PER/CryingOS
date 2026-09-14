@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs><linearGradient id="phg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#34C759"/><stop offset="100%" stop-color="#28A745"/>
+  </linearGradient></defs>
+  <rect width="48" height="48" rx="12" fill="url(#phg)"/>
+  <path d="M15 12c-2 0-4 2-4 4 0 11 9 20 20 20 2 0 4-2 4-4v-3c0-1-1-2-2-2l-5-1c-1 0-2 0-3 1l-2 2c-3-2-5-4-7-7l2-2c1-1 1-2 1-3l-1-5c0-1-1-2-2-2h-1z" fill="#fff"/>
+</svg>
