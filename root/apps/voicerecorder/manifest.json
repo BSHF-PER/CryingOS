@@ -1,0 +1,15 @@
+{
+  "slug": "voicerecorder",
+  "name": "Voice Memos",
+  "icon": "🎙️",
+  "iconType": "image",
+  "iconSrc": "assets/icons/VoiceRecorder.svg",
+  "color": "#FF3B30",
+  "version": "1.0.0",
+  "description": "Record and play back audio memos",
+  "default": false,
+  "removable": true,
+  "entry": "apps/voicerecorder/app.js",
+  "styles": ["apps/voicerecorder/style.css"],
+  "sort": 35
+}
