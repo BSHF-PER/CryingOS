@@ -1,0 +1,15 @@
+{
+  "slug": "calculator",
+  "name": "Calculator",
+  "icon": "🧮",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Calculator.svg",
+  "color": "#FF9500",
+  "version": "2.0.0",
+  "description": "A beautiful calculator with scientific functions",
+  "default": false,
+  "removable": true,
+  "entry": "apps/calculator/app.js",
+  "styles": ["apps/calculator/style.css"],
+  "sort": 10
+}
