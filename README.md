@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="https://via.placeholder.com/800x450/1a1a2e/ffffff?text=CryingOS+Preview+(Add+Your+Screenshot+Here)" alt="CryingOS Preview" width="800">
+  <img src="https://www.mediafire.com/convkey/f8a2/saizu0qi6e4a86lag.jpg" alt="CryingOS Preview" width="800">
 </p>
 
 ---
