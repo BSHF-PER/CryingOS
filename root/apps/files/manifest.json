@@ -1,0 +1,15 @@
+{
+  "slug": "files",
+  "name": "Files",
+  "icon": "📁",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Files.svg",
+  "color": "#007AFF",
+  "version": "1.0.0",
+  "description": "Manage all your files in one place",
+  "default": true,
+  "removable": true,
+  "entry": "apps/files/app.js",
+  "styles": ["apps/files/style.css"],
+  "sort": 80
+}
