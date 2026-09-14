@@ -1,360 +1,367 @@
-/* Browser — Secure Web Proxy */
+/* Camera — iOS Style */
 (function () {
   'use strict';
 
-  CP.register('browser', {
+  let stream = null;
+
+  CP.register('camera', {
     async mount(root, cp) {
-      var currentUrl = '';
-      var history = [];
-      var historyIndex = -1;
-      var isLoading = false;
-      
-      // Bookmarks (localStorage)
-      var bookmarksKey = 'cp_browser_bookmarks_' + (cp.phone.uuid || '');
-      var bookmarks = [];
-      try {
-        bookmarks = JSON.parse(localStorage.getItem(bookmarksKey)) || [];
-      } catch(e) { bookmarks = []; }
+      let facingMode = 'user';
+      let currentFilter = 'normal';
+      let flashMode = 'off'; // off | on
+      let timerMode = 0; // 0 | 3 | 10
+      let ratio = '43'; // 43 | 11 | 169
+      let camMode = 'photo'; // photo | square | filters
+      let timerCountdown = null;
 
-      // ✨ Build absolute proxy path
-      function getProxyBase() {
-        var path = window.location.pathname;
-        var base = path.substring(0, path.lastIndexOf('/') + 1);
-        if (!base.endsWith('/')) base += '/';
-        return base + 'api/browser.php?url=';
-      }
-      
-      var PROXY_BASE = getProxyBase();
-      console.log('🌐 Proxy base:', PROXY_BASE);
+      // ---------- Filters ----------
+      const filters = [
+        { id: 'normal', name: 'Normal', css: 'none', canvas: 'none' },
+        { id: 'vivid', name: 'Vivid', css: 'saturate(1.5) contrast(1.1)', canvas: 'saturate(1.5) contrast(1.1)' },
+        { id: 'mono', name: 'Mono', css: 'grayscale(1) contrast(1.1)', canvas: 'grayscale(1) contrast(1.1)' },
+        { id: 'warm', name: 'Warm', css: 'sepia(0.3) saturate(1.3)', canvas: 'sepia(0.3) saturate(1.3)' },
+        { id: 'cool', name: 'Cool', css: 'hue-rotate(15deg) saturate(1.2)', canvas: 'hue-rotate(15deg) saturate(1.2)' },
+        { id: 'dramatic', name: 'Dramatic', css: 'contrast(1.4) brightness(0.9)', canvas: 'contrast(1.4) brightness(0.9)' },
+        { id: 'fade', name: 'Fade', css: 'contrast(0.85) brightness(1.1) saturate(0.8)', canvas: 'contrast(0.85) brightness(1.1) saturate(0.8)' },
+      ];
 
-      var icons = {
-        back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>',
-        forward: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>',
-        reload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
-        home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-        go: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
-        bookmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
-        bookmarkFill: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+      // ---------- SVG Icons ----------
+      const icons = {
+        flashOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+        flashOn: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+        timer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>',
+        ratio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>',
+        flip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>',
+        shutter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>',
+        gallery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
         close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-        lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-        globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
-        trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-        star: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+        cameraOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l22 22"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56"/></svg>',
       };
 
-      function svg(name, size) {
-        size = size || 20;
-        var i = icons[name] || '';
-        return i.replace('<svg', '<svg width="' + size + '" height="' + size + '"');
+      function svg(name, size = 20) {
+        const i = icons[name] || '';
+        return i.replace('<svg', `<svg width="${size}" height="${size}"`);
       }
 
-      function esc(s) {
-        return String(s || '').replace(/[&<>"']/g, function(c) {
-          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-        });
-      }
+      // ---------- Render ----------
+      root.innerHTML = `
+        <div class="cam">
+          <!-- Top Controls -->
+          <div class="cam-top">
+            <button class="cam-ctrl" id="camFlash" title="Flash">
+              ${svg('flashOff', 20)}
+            </button>
+            <button class="cam-ctrl" id="camTimer" title="Timer">
+              ${svg('timer', 20)}
+              <span class="cam-badge" id="camTimerBadge" hidden></span>
+            </button>
+            <button class="cam-ctrl" id="camRatio" title="Aspect ratio">
+              ${svg('ratio', 20)}
+              <span class="cam-badge" id="camRatioBadge">4:3</span>
+            </button>
+          </div>
 
-      function normalizeUrl(input) {
-        input = input.trim();
-        if (!input) return '';
-        
-        if (/^https?:\/\//i.test(input)) return input;
-        
-        if (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/.*)?$/i.test(input)) {
-          return 'https://' + input;
-        }
-        
-        return 'https://duckduckgo.com/?q=' + encodeURIComponent(input) + '&ia=web';
-      }
+          <!-- Timer Countdown Overlay -->
+          <div class="cam-countdown" id="camCountdown" hidden>
+            <span id="camCountNum">3</span>
+          </div>
 
-      function getDomain(url) {
+          <!-- Flash Effect -->
+          <div class="cam-flashfx" id="camFlashFx"></div>
+
+          <!-- Viewport -->
+          <div class="cam-viewport cam-ratio-43" id="camViewport">
+            <video class="cam-video" id="camVideo" autoplay playsinline muted></video>
+            <div class="cam-noperm" id="camNoperm" hidden>
+              <div class="cam-noperm-icon">${svg('cameraOff', 48)}</div>
+              <p class="cam-noperm-title">Camera Unavailable</p>
+              <p class="cam-noperm-sub">Please allow camera access or use HTTPS</p>
+            </div>
+          </div>
+
+          <!-- Filter Bar (shown in filters mode) -->
+          <div class="cam-filters" id="camFilters" hidden>
+            ${filters.map(f => `
+              <button class="cam-filter ${f.id === 'normal' ? 'active' : ''}" data-filter="${f.id}">
+                <span class="cam-filter-prev" style="filter:${f.css}"></span>
+                <span class="cam-filter-name">${f.name}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Mode Selector -->
+          <div class="cam-modes">
+            <button class="cam-mode" data-mode="square">Square</button>
+            <button class="cam-mode active" data-mode="photo">Photo</button>
+            <button class="cam-mode" data-mode="filters">Filters</button>
+          </div>
+
+          <!-- Bottom Controls -->
+          <div class="cam-bottom">
+            <button class="cam-thumb" id="camGallery" title="Open Photos">
+              ${svg('gallery', 20)}
+            </button>
+            <button class="cam-shutter" id="camShutter" title="Capture">
+              <span class="cam-shutter-inner"></span>
+            </button>
+            <button class="cam-flipbtn" id="camFlip" title="Switch camera">
+              ${svg('flip', 22)}
+            </button>
+          </div>
+        </div>`;
+
+      const $ = s => root.querySelector(s);
+      const video = $('#camVideo');
+      const viewport = $('#camViewport');
+      const noperm = $('#camNoperm');
+      const filtersBar = $('#camFilters');
+      const flashBtn = $('#camFlash');
+      const timerBtn = $('#camTimer');
+      const timerBadge = $('#camTimerBadge');
+      const ratioBtn = $('#camRatio');
+      const ratioBadge = $('#camRatioBadge');
+      const countdown = $('#camCountdown');
+      const countNum = $('#camCountNum');
+      const flashFx = $('#camFlashFx');
+      const shutter = $('#camShutter');
+
+      // ---------- Camera ----------
+      async function startCamera() {
+        stopCamera();
         try {
-          return new URL(url).hostname;
-        } catch(e) {
-          return '';
-        }
-      }
-
-      function isBookmarked(url) {
-        return bookmarks.some(function(b) { return b.url === url; });
-      }
-
-      function toggleBookmark() {
-        if (!currentUrl) return;
-        var idx = bookmarks.findIndex(function(b) { return b.url === currentUrl; });
-        if (idx !== -1) {
-          bookmarks.splice(idx, 1);
-          cp.toast('Bookmark removed');
-        } else {
-          bookmarks.push({
-            url: currentUrl,
-            title: getDomain(currentUrl),
-            added: Date.now()
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
           });
-          cp.toast('Bookmark added');
-        }
-        try {
-          localStorage.setItem(bookmarksKey, JSON.stringify(bookmarks));
-        } catch(e) {}
-        updateBookmarkBtn();
-      }
-
-      function updateBookmarkBtn() {
-        var btn = root.querySelector('#brBookmark');
-        if (!btn) return;
-        btn.innerHTML = isBookmarked(currentUrl) ? svg('bookmarkFill', 18) : svg('bookmark', 18);
-        btn.classList.toggle('is-bookmarked', isBookmarked(currentUrl));
-      }
-
-      // Build UI
-      root.innerHTML =
-        '<div class="br">' +
-        '  <header class="br-toolbar">' +
-        '    <div class="br-nav">' +
-        '      <button class="br-btn" id="brBack" title="Back">' + svg('back', 18) + '</button>' +
-        '      <button class="br-btn" id="brForward" title="Forward">' + svg('forward', 18) + '</button>' +
-        '      <button class="br-btn" id="brReload" title="Reload">' + svg('reload', 18) + '</button>' +
-        '      <button class="br-btn" id="brHome" title="Home">' + svg('home', 18) + '</button>' +
-        '    </div>' +
-        '    <form class="br-url-form" id="brUrlForm">' +
-        '      <span class="br-url-icon" id="brUrlIcon">' + svg('globe', 14) + '</span>' +
-        '      <input class="br-url-input" id="brUrlInput" placeholder="Search or enter website" autocomplete="off" spellcheck="false">' +
-        '      <button class="br-go-btn" type="submit" title="Go">' + svg('go', 16) + '</button>' +
-        '    </form>' +
-        '    <button class="br-btn" id="brBookmark" title="Bookmark">' + svg('bookmark', 18) + '</button>' +
-        '  </header>' +
-        '  <div class="br-progress" id="brProgress"><div class="br-progress-bar"></div></div>' +
-        '  <div class="br-stage" id="brStage">' +
-        '    <div class="br-home" id="brHomeScreen">' +
-        '      <div class="br-home-inner">' +
-        '        <div class="br-home-logo">' + svg('globe', 64) + '</div>' +
-        '        <h1 class="br-home-title">Browser</h1>' +
-        '        <p class="br-home-sub">Secure private browsing via proxy</p>' +
-        '        <div class="br-shortcuts" id="brShortcuts">' +
-        '          <button class="br-shortcut" data-url="https://www.google.com/webhp?igu=1">' +
-        '            <div class="br-shortcut-icon" style="background:#4285F4">G</div>' +
-        '            <span>Google</span>' +
-        '          </button>' +
-        '          <button class="br-shortcut" data-url="https://duckduckgo.com">' +
-        '            <div class="br-shortcut-icon" style="background:#DE5833">D</div>' +
-        '            <span>DuckDuckGo</span>' +
-        '          </button>' +
-        '          <button class="br-shortcut" data-url="https://en.wikipedia.org">' +
-        '            <div class="br-shortcut-icon" style="background:#000">W</div>' +
-        '            <span>Wikipedia</span>' +
-        '          </button>' +
-        '          <button class="br-shortcut" data-url="https://github.com">' +
-        '            <div class="br-shortcut-icon" style="background:#24292e">GH</div>' +
-        '            <span>GitHub</span>' +
-        '          </button>' +
-        '        </div>' +
-        '        <div class="br-bookmarks" id="brBookmarks"></div>' +
-        '        <div class="br-home-footer">' +
-        '          <p>🔒 Your browsing is protected by server-side proxy</p>' +
-        '          <p class="br-home-note">Your real IP is never exposed</p>' +
-        '        </div>' +
-        '      </div>' +
-        '    </div>' +
-        '    <iframe class="br-iframe" id="brIframe" hidden sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>' +
-        '  </div>' +
-        '</div>';
-
-      var urlInput = root.querySelector('#brUrlInput');
-      var urlForm = root.querySelector('#brUrlForm');
-      var backBtn = root.querySelector('#brBack');
-      var forwardBtn = root.querySelector('#brForward');
-      var reloadBtn = root.querySelector('#brReload');
-      var homeBtn = root.querySelector('#brHome');
-      var bookmarkBtn = root.querySelector('#brBookmark');
-      var iframe = root.querySelector('#brIframe');
-      var homeScreen = root.querySelector('#brHomeScreen');
-      var progressBar = root.querySelector('#brProgress');
-      var urlIcon = root.querySelector('#brUrlIcon');
-      var bookmarksEl = root.querySelector('#brBookmarks');
-
-      function navigate(url, addToHistory) {
-        if (addToHistory === undefined) addToHistory = true;
-        url = normalizeUrl(url);
-        if (!url) return;
-        
-        currentUrl = url;
-        isLoading = true;
-        
-        urlInput.value = url;
-        homeScreen.hidden = true;
-        iframe.hidden = false;
-        progressBar.classList.add('loading');
-        urlIcon.innerHTML = url.startsWith('https://') ? svg('lock', 14) : svg('globe', 14);
-        
-        // ✨ استفاده از PROXY_BASE مطلق
-        var proxyUrl = PROXY_BASE + encodeURIComponent(url);
-        iframe.src = proxyUrl;
-        
-        if (addToHistory) {
-          history = history.slice(0, historyIndex + 1);
-          history.push(url);
-          historyIndex = history.length - 1;
-        }
-        
-        updateNavButtons();
-        updateBookmarkBtn();
-      }
-
-      function goBack() {
-        if (historyIndex > 0) {
-          historyIndex--;
-          navigate(history[historyIndex], false);
-        } else if (historyIndex === 0) {
-          showHome();
-          historyIndex = -1;
-          history = [];
+          video.srcObject = stream;
+          noperm.hidden = true;
+        } catch (e) {
+          noperm.hidden = false;
+          stream = null;
         }
       }
 
-      function goForward() {
-        if (historyIndex < history.length - 1) {
-          historyIndex++;
-          navigate(history[historyIndex], false);
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+          stream = null;
         }
       }
 
-      function reload() {
-        if (currentUrl) {
-          iframe.src = iframe.src;
-          progressBar.classList.add('loading');
-        }
-      }
-
-      function showHome() {
-        currentUrl = '';
-        urlInput.value = '';
-        homeScreen.hidden = false;
-        iframe.hidden = true;
-        try { iframe.src = 'about:blank'; } catch(e) {}
-        progressBar.classList.remove('loading');
-        urlIcon.innerHTML = svg('globe', 14);
-        updateBookmarkBtn();
-        renderBookmarks();
-      }
-
-      function updateNavButtons() {
-        backBtn.disabled = historyIndex <= 0 && !currentUrl;
-        forwardBtn.disabled = historyIndex >= history.length - 1;
-      }
-
-      function renderBookmarks() {
-        if (bookmarks.length === 0) {
-          bookmarksEl.innerHTML = '';
+      // ---------- Capture ----------
+      async function capture() {
+        if (!stream) {
+          cp.toast('Camera not available');
           return;
         }
-        
-        var html = '<h3 class="br-bookmarks-title">Bookmarks</h3><div class="br-bookmarks-list">';
-        for (var i = 0; i < bookmarks.length; i++) {
-          var b = bookmarks[i];
-          var domain = getDomain(b.url);
-          html +=
-            '<button class="br-bookmark-item" data-url="' + esc(b.url) + '">' +
-            '  <span class="br-bookmark-star">' + svg('star', 14) + '</span>' +
-            '  <span class="br-bookmark-text">' + esc(b.title || domain) + '</span>' +
-            '  <span class="br-bookmark-domain">' + esc(domain) + '</span>' +
-            '  <span class="br-bookmark-del" data-del="' + i + '">' + svg('close', 14) + '</span>' +
-            '</button>';
+
+        // Flash effect
+        if (flashMode === 'on') {
+          flashFx.classList.add('on');
+          setTimeout(() => flashFx.classList.remove('on'), 300);
         }
-        html += '</div>';
-        bookmarksEl.innerHTML = html;
+
+        // Shutter animation
+        shutter.classList.add('capturing');
+        setTimeout(() => shutter.classList.remove('capturing'), 300);
+
+        // Determine dimensions based on ratio
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        let tw, th;
         
-        bookmarksEl.querySelectorAll('.br-bookmark-item').forEach(function(el) {
-          el.addEventListener('click', function(e) {
-            if (e.target.closest('.br-bookmark-del')) return;
-            navigate(el.getAttribute('data-url'));
-          });
-        });
-        
-        bookmarksEl.querySelectorAll('.br-bookmark-del').forEach(function(btn) {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var idx = parseInt(btn.getAttribute('data-del'));
-            bookmarks.splice(idx, 1);
-            try { localStorage.setItem(bookmarksKey, JSON.stringify(bookmarks)); } catch(e){}
-            renderBookmarks();
-            cp.toast('Bookmark removed');
-          });
-        });
+        if (ratio === '11') {
+          const s = Math.min(vw, vh);
+          tw = th = s;
+        } else if (ratio === '169') {
+          if (vw / vh > 16 / 9) {
+            th = vh;
+            tw = vh * 16 / 9;
+          } else {
+            tw = vw;
+            th = vw * 9 / 16;
+          }
+        } else { // 4:3
+          if (vw / vh > 4 / 3) {
+            th = vh;
+            tw = vh * 4 / 3;
+          } else {
+            tw = vw;
+            th = vw * 3 / 4;
+          }
+        }
+
+        // Draw to canvas with filter
+        const canvas = document.createElement('canvas');
+        canvas.width = tw;
+        canvas.height = th;
+        const ctx = canvas.getContext('2d');
+
+        const filter = filters.find(f => f.id === currentFilter);
+        if (filter && filter.canvas !== 'none') {
+          ctx.filter = filter.canvas;
+        }
+
+        const sx = (vw - tw) / 2;
+        const sy = (vh - th) / 2;
+        ctx.drawImage(video, sx, sy, tw, th, 0, 0, tw, th);
+
+        // Mirror front camera
+        if (facingMode === 'user') {
+          const temp = document.createElement('canvas');
+          temp.width = tw;
+          temp.height = th;
+          const tctx = temp.getContext('2d');
+          tctx.translate(tw, 0);
+          tctx.scale(-1, 1);
+          tctx.drawImage(canvas, 0, 0);
+          ctx.filter = 'none';
+          ctx.clearRect(0, 0, tw, th);
+          ctx.drawImage(temp, 0, 0);
+        }
+
+        // Convert to blob and upload
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            cp.toast('Failed to capture');
+            return;
+          }
+          const file = new File([blob], `camera-${Date.now()}.png`, { type: 'image/png' });
+          const r = await cp.gallery.upload(file);
+          if (r.ok) {
+            cp.toast('Saved to Photos');
+          } else {
+            cp.toast('Failed to save');
+          }
+        }, 'image/png');
       }
 
-      // Events
-      urlForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        var val = urlInput.value.trim();
-        if (val) navigate(val);
+      function captureWithTimer() {
+        if (timerMode === 0) {
+          capture();
+          return;
+        }
+        let count = timerMode;
+        countdown.hidden = false;
+        countNum.textContent = count;
+        
+        timerCountdown = setInterval(() => {
+          count--;
+          if (count <= 0) {
+            clearInterval(timerCountdown);
+            countdown.hidden = true;
+            capture();
+          } else {
+            countNum.textContent = count;
+            countNum.classList.remove('pop');
+            void countNum.offsetWidth;
+            countNum.classList.add('pop');
+          }
+        }, 1000);
+      }
+
+      // ---------- Event Listeners ----------
+      shutter.addEventListener('click', captureWithTimer);
+
+      $('#camFlip').addEventListener('click', () => {
+        facingMode = facingMode === 'user' ? 'environment' : 'user';
+        startCamera();
       });
 
-      backBtn.addEventListener('click', goBack);
-      forwardBtn.addEventListener('click', goForward);
-      reloadBtn.addEventListener('click', reload);
-      homeBtn.addEventListener('click', showHome);
-      bookmarkBtn.addEventListener('click', toggleBookmark);
+      $('#camGallery').addEventListener('click', () => {
+        cp.openApp('gallery');
+      });
 
-      root.querySelectorAll('.br-shortcut').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          navigate(btn.getAttribute('data-url'));
+      // Flash toggle
+      flashBtn.addEventListener('click', () => {
+        flashMode = flashMode === 'off' ? 'on' : 'off';
+        flashBtn.innerHTML = svg(flashMode === 'on' ? 'flashOn' : 'flashOff', 20);
+        flashBtn.classList.toggle('active', flashMode === 'on');
+        cp.toast(`Flash ${flashMode === 'on' ? 'On' : 'Off'}`);
+      });
+
+      // Timer cycle
+      timerBtn.addEventListener('click', () => {
+        const modes = [0, 3, 10];
+        const i = modes.indexOf(timerMode);
+        timerMode = modes[(i + 1) % modes.length];
+        if (timerMode === 0) {
+          timerBadge.hidden = true;
+          timerBtn.classList.remove('active');
+        } else {
+          timerBadge.hidden = false;
+          timerBadge.textContent = `${timerMode}s`;
+          timerBtn.classList.add('active');
+        }
+        cp.toast(timerMode === 0 ? 'Timer Off' : `Timer ${timerMode}s`);
+      });
+
+      // Ratio cycle
+      ratioBtn.addEventListener('click', () => {
+        const ratios = ['43', '11', '169'];
+        const labels = { '43': '4:3', '11': '1:1', '169': '16:9' };
+        const i = ratios.indexOf(ratio);
+        ratio = ratios[(i + 1) % ratios.length];
+        ratioBadge.textContent = labels[ratio];
+        
+        viewport.className = `cam-viewport cam-ratio-${ratio}`;
+        applyVideoFilter();
+        cp.toast(`Aspect Ratio ${labels[ratio]}`);
+      });
+
+      // Mode selector
+      root.querySelectorAll('.cam-mode').forEach(btn => {
+        btn.addEventListener('click', () => {
+          camMode = btn.dataset.mode;
+          root.querySelectorAll('.cam-mode').forEach(b => b.classList.toggle('active', b === btn));
+          
+          // Toggle filter bar
+          filtersBar.hidden = camMode !== 'filters';
+          
+          // Square mode forces 1:1
+          if (camMode === 'square') {
+            ratio = '11';
+            ratioBadge.textContent = '1:1';
+          } else if (camMode === 'photo') {
+            ratio = '43';
+            ratioBadge.textContent = '4:3';
+          }
+          viewport.className = `cam-viewport cam-ratio-${ratio}`;
+          applyVideoFilter();
         });
       });
 
-      iframe.addEventListener('load', function() {
-        isLoading = false;
-        progressBar.classList.remove('loading');
-        
-        try {
-          var match = iframe.src.match(/[?&]url=([^&]+)/);
-          if (match) {
-            var decoded = decodeURIComponent(match[1]);
-            if (decoded !== currentUrl) {
-              currentUrl = decoded;
-              urlInput.value = decoded;
-              if (history[historyIndex] !== decoded) {
-                history = history.slice(0, historyIndex + 1);
-                history.push(decoded);
-                historyIndex = history.length - 1;
-                updateNavButtons();
-              }
-            }
-            urlIcon.innerHTML = decoded.startsWith('https://') ? svg('lock', 14) : svg('globe', 14);
-            updateBookmarkBtn();
-          }
-        } catch(e) {}
+      // Filter selection
+      root.querySelectorAll('.cam-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentFilter = btn.dataset.filter;
+          root.querySelectorAll('.cam-filter').forEach(b => b.classList.toggle('active', b === btn));
+          applyVideoFilter();
+        });
       });
 
-      urlInput.addEventListener('focus', function() {
-        urlInput.select();
-      });
-
-      var keyHandler = function(e) {
-        if (e.ctrlKey || e.metaKey) {
-          if (e.key === 'l') {
-            e.preventDefault();
-            urlInput.focus();
-          } else if (e.key === 'r') {
-            e.preventDefault();
-            reload();
-          } else if (e.key === 'd') {
-            e.preventDefault();
-            toggleBookmark();
-          }
+      function applyVideoFilter() {
+        const filter = filters.find(f => f.id === currentFilter);
+        if (filter && filter.css !== 'none') {
+          video.style.filter = filter.css;
+        } else {
+          video.style.filter = 'none';
         }
-      };
-      document.addEventListener('keydown', keyHandler);
+        // Mirror front camera
+        video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+      }
 
-      this._cleanup = function() {
-        document.removeEventListener('keydown', keyHandler);
-        try { iframe.src = 'about:blank'; } catch(e) {}
+      // Cleanup on unmount
+      this._cleanup = () => {
+        stopCamera();
+        if (timerCountdown) clearInterval(timerCountdown);
       };
 
-      renderBookmarks();
-      updateNavButtons();
+      // Start
+      startCamera();
     },
 
-    unmount: function(root, cp) {
+    unmount(root, cp) {
       if (this._cleanup) this._cleanup();
     }
   });
