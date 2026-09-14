@@ -1,0 +1,446 @@
+/* App Store — iOS Liquid Glass */
+.as {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%);
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,.2) transparent;
+}
+
+.as::-webkit-scrollbar { width: 6px; }
+.as::-webkit-scrollbar-track { background: transparent; }
+.as::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 3px; }
+
+/* Header */
+.as-head {
+  padding: 20px 20px 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.as-greeting { margin-bottom: 16px; }
+
+.as-date {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #007AFF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.as-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.as-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.as-search-icon {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  color: #8e8e93;
+  pointer-events: none;
+}
+
+.as-search-input {
+  width: 100%;
+  background: rgba(118, 118, 128, 0.12);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px 10px 38px;
+  font-size: 15px;
+  color: #000;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.as-search-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+.as-search-input::placeholder { color: #8e8e93; }
+
+/* Featured Card */
+.as-featured {
+  padding: 16px 20px;
+}
+
+.as-feat-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 200px;
+  background: linear-gradient(135deg, var(--accent, #007AFF) 0%, #5856d6 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  padding: 24px;
+}
+
+.as-feat-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.as-feat-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  color: #fff;
+}
+
+.as-feat-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.as-feat-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.as-feat-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.9;
+  margin: 0 0 16px;
+}
+
+.as-feat-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent, #007AFF);
+  border: none;
+  border-radius: 18px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.as-feat-btn:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.as-feat-btn:active {
+  transform: scale(0.98);
+}
+
+.as-feat-icon {
+  margin-left: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Categories */
+.as-cats {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.as-cats::-webkit-scrollbar { display: none; }
+
+.as-cat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.as-cat:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.as-cat.active {
+  background: #007AFF;
+  color: #fff;
+  border-color: #007AFF;
+}
+
+.as-cat-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.as-cat-icon svg { width: 100%; height: 100%; }
+
+/* App List */
+.as-list {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.as-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 14px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.as-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.as-card-icon {
+  flex-shrink: 0;
+}
+
+.as-icon-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.as-icon-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.as-icon-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent, #007AFF) 70%, white) 0%, var(--accent, #007AFF) 100%);
+  border-radius: 14px;
+  font-size: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.as-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.as-card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 4px;
+  letter-spacing: -0.2px;
+}
+
+.as-card-desc {
+  font-size: 13px;
+  color: #8e8e93;
+  line-height: 1.4;
+  margin: 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.as-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #8e8e93;
+}
+
+.as-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #FFB800;
+}
+
+.as-card-rating svg { width: 12px; height: 12px; }
+
+/* Buttons */
+.as-card-action {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.as-btn {
+  border: none;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.as-btn-get {
+  background: #007AFF;
+  color: #fff;
+}
+
+.as-btn-get:hover {
+  background: #0051D5;
+  transform: scale(1.05);
+}
+
+.as-btn-open {
+  background: rgba(0, 122, 255, 0.12);
+  color: #007AFF;
+}
+
+.as-btn-open:hover {
+  background: rgba(0, 122, 255, 0.2);
+}
+
+.as-btn-del {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF3B30;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.as-btn-del:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.as-btn-del svg { width: 16px; height: 16px; }
+
+.as-btn-system {
+  background: rgba(142, 142, 147, 0.12);
+  color: #8e8e93;
+  cursor: default;
+}
+
+/* Empty State */
+.as-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #8e8e93;
+}
+
+.as-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.as-empty-icon svg { width: 100%; height: 100%; }
+
+/* Footer */
+.as-foot {
+  text-align: center;
+  padding: 24px 20px;
+  color: #8e8e93;
+  font-size: 12px;
+}
+
+.as-foot p { margin: 4px 0; }
+
+.as-foot-small { opacity: 0.6; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .as-head { padding: 16px; }
+  .as-title { font-size: 28px; }
+  .as-featured { padding: 12px 16px; }
+  .as-feat-card { padding: 20px; }
+  .as-feat-title { font-size: 20px; }
+  .as-feat-icon { margin-left: 12px; }
+  .as-cats { padding: 0 16px 12px; }
+  .as-list { padding: 0 16px 16px; }
+  .as-card { padding: 12px; }
+  .as-card-name { font-size: 15px; }
+  .as-card-desc { font-size: 12px; }
+}
+
+@media (min-width: 768px) {
+  .as-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .as-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .as-card-info {
+    text-align: center;
+  }
+  
+  .as-card-meta {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .as-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
