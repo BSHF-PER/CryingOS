@@ -1,0 +1,15 @@
+{
+  "slug": "browser",
+  "name": "Browser",
+  "icon": "🌐",
+  "iconType": "image",
+  "iconSrc": "assets/icons/chrome.svg",
+  "color": "#5856D6",
+  "version": "1.0.0",
+  "description": "Browse the web securely through proxy",
+  "default": true,
+  "removable": true,
+  "entry": "apps/browser/app.js",
+  "styles": ["apps/browser/style.css"],
+  "sort": 90
+}
