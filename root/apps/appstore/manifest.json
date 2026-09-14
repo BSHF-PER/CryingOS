@@ -1,0 +1,15 @@
+{
+  "slug": "appstore",
+  "name": "App Store",
+  "icon": "🛍️",
+  "iconType": "image",
+  "iconSrc": "assets/icons/AppStore.svg",
+  "color": "#007AFF",
+  "version": "2.0.0",
+  "description": "Discover and install apps — the only non-removable app",
+  "default": true,
+  "removable": false,
+  "entry": "apps/appstore/app.js",
+  "styles": ["apps/appstore/style.css"],
+  "sort": 100
+}
