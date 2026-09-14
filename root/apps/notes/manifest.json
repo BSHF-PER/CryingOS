@@ -1,0 +1,15 @@
+{
+  "slug": "notes",
+  "name": "Notes",
+  "icon": "📝",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Notes.svg",
+  "color": "#FFD60A",
+  "version": "1.0.0",
+  "description": "Write text and draw sketches",
+  "default": false,
+  "removable": true,
+  "entry": "apps/notes/app.js",
+  "styles": ["apps/notes/style.css"],
+  "sort": 40
+}
