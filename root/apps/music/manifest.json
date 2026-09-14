@@ -1,0 +1,15 @@
+{
+  "slug": "music",
+  "name": "Music",
+  "icon": "🎵",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Music.svg",
+  "color": "#FF2D55",
+  "version": "1.0.0",
+  "description": "Play your music with playlists, favorites and repeat modes",
+  "default": false,
+  "removable": true,
+  "entry": "apps/music/app.js",
+  "styles": ["apps/music/style.css"],
+  "sort": 70
+}
