@@ -1,0 +1,15 @@
+{
+  "slug": "contacts",
+  "name": "Contacts",
+  "icon": "👥",
+  "iconType": "image",
+  "iconSrc": "assets/icons/Contacts.svg",
+  "color": "#FF9500",
+  "version": "1.0.0",
+  "description": "Manage your contacts and block numbers",
+  "default": false,
+  "removable": true,
+  "entry": "apps/contacts/app.js",
+  "styles": ["apps/contacts/style.css"],
+  "sort": 55
+}
